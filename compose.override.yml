@@ -1,0 +1,7 @@
+services:
+  sweater_ui:
+    build:
+      context: ./sweater_ui
+  sweater_api:
+    build:
+      context: ./sweater_api

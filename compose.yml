@@ -1,0 +1,42 @@
+version: "3.9"
+
+services:
+  sweater_ui:
+    image: kalyniukv/sweater_ui # specify name of image on Docker Hub
+    restart: "always" # automatically restart container when server crashes
+    environment: # set up environment variables
+      SWEATER_API_IP: ${SWEATER_API_IP:-localhost} # Use localhost as the default value
+    ports:
+      - "8000:80" # expose port 8000 so that applications outside the container can connect to it
+    depends_on: # only run sweater_ui after sweater_api has started
+      sweater_api:
+        condition: service_started
+  sweater_api:
+    image: kalyniukv/sweater_api
+    restart: "always" # automatically restart container when server crashes
+    environment:
+      DATABASE_URL: "postgres://postgres:${POSTGRES_PASSWORD}@db:5432/sweater_db"
+    ports:
+      - "3000:3000" # expose port 3000 so that applications outside the container can connect to it
+    depends_on:
+      - db
+  db:
+    image: postgres:17.2-alpine
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: sweater_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck: # Healthcheck for the database
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d sweater_db" ] # Check if Postgres is ready
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  db_data:
+    driver: local

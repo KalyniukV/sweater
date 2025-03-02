@@ -16,7 +16,7 @@ impl PostgresNotificationStore {
 
 #[async_trait::async_trait]
 impl NotificationStore for PostgresNotificationStore {
-    async fn create_notification(&mut self, nofification: Notification) -> Result<(), String> {
+    async fn create_notification(&mut self, nofification: &Notification) -> Result<(), String> {
         let created_at = NaiveDateTime::parse_from_str(&nofification.created_at, "%Y-%m-%d %H:%M:%S%.f").unwrap();
         sqlx::query!(r#"
             INSERT INTO notifications (id, user_id, text, created_at)
@@ -29,7 +29,7 @@ impl NotificationStore for PostgresNotificationStore {
           )
             .execute(&self.pool)
             .await
-            .map_err(|e| format!("{}", e))?;
+            .map_err(|e| e.to_string())?;
 
         Ok(())
     }

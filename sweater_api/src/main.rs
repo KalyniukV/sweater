@@ -3,16 +3,18 @@ use tokio::sync::RwLock;
 use sqlx::PgPool;
 use sweater_api::{get_postgres_pool, Application};
 use sweater_api::app_state::AppState;
-use sweater_api::data_store::PostgresNotificationStore;
+use sweater_api::data_store::{PostgresNotificationStore, PostgresUserStore, PostgresAuthenticationStore};
 use sweater_api::utils::DATABASE_URL;
 
 #[tokio::main]
 async fn main() {
     let pg_pool = configure_postgresql().await;
 
-    let notification_store = Arc::new(RwLock::new(PostgresNotificationStore::new(pg_pool)));
+    let notification_store = Arc::new(RwLock::new(PostgresNotificationStore::new(pg_pool.clone())));
+    let user_store = Arc::new(RwLock::new(PostgresUserStore::new(pg_pool.clone())));
+    let authentication_store = Arc::new(RwLock::new(PostgresAuthenticationStore::new(pg_pool.clone())));
 
-    let app_state = AppState::new(notification_store);
+    let app_state = AppState::new(notification_store, user_store, authentication_store);
 
     let app = Application::build(app_state, "0.0.0.0:3000")
         .await

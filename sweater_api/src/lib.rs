@@ -34,6 +34,8 @@ impl Application {
             .allow_origin(allowed_origins);
 
         let router = Router::new()
+            .route("/signup", post(routes::signup))
+            .route("/login", post(routes::login))
             .route("/create_notification", post(routes::create_notification))
             .route("/notifications", get(routes::get_notifications))
             .with_state(app_state)

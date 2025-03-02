@@ -16,7 +16,7 @@ pub async fn create_notification(
     let notification = Notification::new(request.text, user_id);
 
     let mut notification_store = state.notification_store.write().await;
-    let _ = notification_store.create_notification(notification.clone()).await;
+    let _ = notification_store.create_notification(&notification.clone()).await;
 
     println!("{:#?}", notification);
 
@@ -25,5 +25,6 @@ pub async fn create_notification(
 
 #[derive(Deserialize)]
 pub struct NotificationRequest {
+    // pub user_id: Uuid, todo add
     pub text: String
 }

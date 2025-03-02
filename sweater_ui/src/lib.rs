@@ -1,18 +1,26 @@
+use crate::routes::{switch, Route};
 use yew::prelude::*;
-use crate::components::{CreateNotification, GetNotifications};
+use yew_router::prelude::*;
+
+use crate::components::authentication_page::AuthenticationPage;
+use crate::context::auth_context::AuthContextProvider;
 
 mod components;
+mod models;
+mod routes;
+mod services;
+mod context;
+
 
 
 #[function_component(App)]
 pub fn app() -> Html {
-    let create_notification_url = "http://localhost:3000/create_notification";
-    let get_notifications_url = "http://localhost:3000/notifications";
-
     html! {
-        <>
-            <CreateNotification url={create_notification_url} />
-            <GetNotifications url={get_notifications_url}/>
-        </>
+        <AuthContextProvider>
+            <BrowserRouter>
+                <Switch<Route> render={switch} />
+            </BrowserRouter>
+        </AuthContextProvider>
     }
 }
+

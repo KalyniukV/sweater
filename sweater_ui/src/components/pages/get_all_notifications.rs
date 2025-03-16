@@ -1,9 +1,10 @@
 use gloo::console::log;
 use gloo_net::http::Request;
 use serde::{Deserialize, Serialize};
+use wasm_bindgen::closure::Closure;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_futures::spawn_local;
-use web_sys::{Document, HtmlElement};
+use web_sys::{Document, HtmlElement, HtmlImageElement, NodeList};
 use yew::prelude::*;
 use yew::use_state;
 use yew::virtual_dom::VNode;
@@ -20,6 +21,18 @@ pub struct Notification {
 pub fn get_notifications() -> Html {
     let notifications_state = use_state(|| Vec::<Notification>::new());
     let error_message_state = use_state(|| Option::<String>::None);
+
+    let selected_image = use_state(|| None);
+
+    let on_image_click = {
+        let selected_image = selected_image.clone();
+        Callback::from(move |image_url: String| selected_image.set(Some(image_url)))
+    };
+
+    let close_modal = {
+        let selected_image = selected_image.clone();
+        Callback::from(move |_| selected_image.set(None))
+    };
 
     let fetch_notifications = {
         let notifications_state_clone = notifications_state.clone();
@@ -52,18 +65,49 @@ pub fn get_notifications() -> Html {
                 {"Fetch Notifications"}
             </button>
 
-            <ul style="list-style: none; padding: 0; width: 100%;">
-                { for notifications_state.iter().map(|notification| html! {
-                    <li style="background: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1); display: flex; align-items: center; gap: 10px;">
-                        <p style="margin: 0; font-size: 14px; color: #333;">{wrap_html_element(get_div(&notification.text))}</p>
-                    </li>
-                }) }
-            </ul>
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 20px; font-family: Arial, sans-serif; background-color: #f9f9f9;">
+                <ul style="list-style: none; padding: 0; width: 100%;">
+                    { for notifications_state.iter().map(|notification| {
+                        let wrapped_html = wrap_html_element(get_div(&notification.text), on_image_click.clone());
+                        html! {
+                            <li style="background: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);">
+                                { wrapped_html }
+                            </li>
+                        }
+                    })}
+                </ul>
+
+                if let Some(image_url) = (*selected_image).clone() {
+                    <div style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.7); display: flex; justify-content: center; align-items: center;" onclick={close_modal}>
+                        <img src={image_url} style="max-width: 90vw; max-height: 90vh; border-radius: 8px;" />
+                    </div>
+                }
+            </div>
         </div>
     }
 }
 
-fn wrap_html_element(element: HtmlElement) -> Html {
+fn wrap_html_element(element: HtmlElement, on_image_click: Callback<String>) -> Html {
+    let cloned_element = element.clone();
+
+    // Find all <img> elements inside the given HTML element
+    let images = cloned_element.query_selector_all("img").unwrap();
+
+    for i in 0..images.length() {
+        if let Some(node) = images.item(i) {
+            if let Some(img) = node.dyn_ref::<HtmlImageElement>() {
+                let img_src = img.src();
+                let on_click = on_image_click.clone();
+                let closure = Closure::wrap(Box::new(move || {
+                    on_click.emit(img_src.clone());
+                }) as Box<dyn Fn()>);
+
+                img.set_onclick(Some(closure.as_ref().unchecked_ref()));
+                closure.forget(); // Prevents Rust from dropping it too soon
+            }
+        }
+    }
+
     VNode::VRef(element.into())
 }
 

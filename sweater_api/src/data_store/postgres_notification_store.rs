@@ -37,7 +37,7 @@ impl NotificationStore for PostgresNotificationStore {
     async fn get_all_notifications(&self) -> Result<Vec<Notification>, String> {
         let rows = sqlx::query_as!(
             NotificationRow,
-            "SELECT * FROM notifications"
+            "SELECT * FROM notifications order by created_at desc"
         )
             .fetch_all(&self.pool)
             .await

@@ -78,12 +78,13 @@ pub fn signup_form() -> Html {
                     password: password_clone.to_string(),
                 };
 
-                match Request::post("http://localhost:3000/signup").json(&request_body).unwrap().send().await {
+                match Request::post("http://localhost:3000/api/signup").json(&request_body).unwrap().send().await {
                     Ok(response) => {
                         match response.json::<SignupResponse>().await {
                             Ok(auth_response) => {
                                 let mut new_auth_context = (*auth_context_clone).clone();
                                 new_auth_context.logged_in = true;
+                                new_auth_context.user_id = auth_response.id;
                                 new_auth_context.username = auth_response.username;
                                 auth_context_clone.set(new_auth_context);
                                 navigator_clone.push(&Route::Home);
@@ -102,17 +103,31 @@ pub fn signup_form() -> Html {
     };
 
     html! {
-        <form onsubmit={on_submit}>
-            <h2>{"Signup"}</h2>
-            {if let Some(msg) = &*error_message {
-                html! { <p style="color: red;">{msg}</p> }
-            } else {
-                html! {}
-            }}
-            <input type="text" placeholder="Username" oninput={on_username_change} />
-            <input type="email" placeholder="Email" oninput={on_email_change} />
-            <input type="password" placeholder="Password" oninput={on_password_change} />
-            <button type="submit">{"Signup"}</button>
-        </form>
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background-color: #f9f9f9; font-family: Arial, sans-serif;">
+            <form onsubmit={on_submit} style="background: white; padding: 24px; border-radius: 10px; box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1); width: 320px; display: flex; flex-direction: column; gap: 12px;">
+                <h2 style="text-align: center; color: #333; margin-bottom: 10px;">{"Signup"}</h2>
+
+                {if let Some(msg) = &*error_message {
+                    html! { <p style="color: red; text-align: center; font-size: 14px;">{msg}</p> }
+                } else {
+                    html! {}
+                }}
+
+                <input type="text" placeholder="Username" oninput={on_username_change}
+                    style="padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; outline: none;"/>
+
+                <input type="email" placeholder="Email" oninput={on_email_change}
+                    style="padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; outline: none;"/>
+
+                <input type="password" placeholder="Password" oninput={on_password_change}
+                    style="padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; outline: none;"/>
+
+                <button type="submit"
+                    style="background-color: #28a745; color: white; padding: 10px; border: none; border-radius: 6px;
+                           font-size: 16px; cursor: pointer; transition: background 0.3s;">
+                    {"Signup"}
+                </button>
+            </form>
+        </div>
     }
 }

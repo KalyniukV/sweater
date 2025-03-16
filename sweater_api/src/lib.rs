@@ -1,13 +1,15 @@
-use std::error::Error;
+use crate::app_state::AppState;
+use crate::utils::DATA_STORAGE_PATH;
 use axum::http::{header, Method};
-use axum::Router;
 use axum::routing::{get, post};
 use axum::serve::Serve;
-use sqlx::PgPool;
+use axum::Router;
 use sqlx::postgres::PgPoolOptions;
+use sqlx::PgPool;
+use std::error::Error;
 use tokio::net::TcpListener;
 use tower_http::cors::CorsLayer;
-use crate::app_state::AppState;
+use tower_http::services::ServeDir;
 
 pub mod routes;
 pub mod domain;
@@ -34,12 +36,14 @@ impl Application {
             .allow_origin(allowed_origins);
 
         let router = Router::new()
-            .route("/signup", post(routes::signup))
-            .route("/login", post(routes::login))
-            .route("/create_notification", post(routes::create_notification))
-            .route("/notifications", get(routes::get_notifications))
+            .route("/api/signup", post(routes::signup))
+            .route("/api/login", post(routes::login))
+            .route("/api/create_notification", post(routes::create_notification))
+            .route("/api/notifications", get(routes::get_notifications))
+            .route("/images/{filename}", get(routes::get_image))
             .with_state(app_state)
-            .layer(cors);
+            .layer(cors)
+            .nest_service("/static", ServeDir::new(DATA_STORAGE_PATH.as_str()));
 
         let listener = TcpListener::bind(address).await?;
         let address = listener.local_addr()?.to_string();

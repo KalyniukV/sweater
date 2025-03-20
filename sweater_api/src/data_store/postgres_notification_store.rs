@@ -2,7 +2,7 @@ use chrono::{NaiveDateTime};
 use sqlx::PgPool;
 use uuid::Uuid;
 use crate::data_store::NotificationStore;
-use crate::domain::{Notification};
+use crate::domain::{Notification, NotificationWithUserInfo};
 
 pub struct PostgresNotificationStore {
     pool: PgPool
@@ -34,21 +34,30 @@ impl NotificationStore for PostgresNotificationStore {
         Ok(())
     }
 
-    async fn get_all_notifications(&self) -> Result<Vec<Notification>, String> {
+    async fn get_all_notifications(&self) -> Result<Vec<NotificationWithUserInfo>, String> {
         let rows = sqlx::query_as!(
             NotificationRow,
-            "SELECT * FROM notifications order by created_at desc"
+            "SELECT
+                n.id as id,
+                n.text as text,
+                n.created_at as created_at,
+                u.id as user_id,
+                u.username as username
+            FROM notifications as n
+            inner join public.users u on n.user_id = u.id
+            order by created_at desc"
         )
             .fetch_all(&self.pool)
             .await
             .map_err(|e| format!("{}", e))?;
 
             let result = rows.into_iter()
-                .map(|row| Notification {
+                .map(|row| NotificationWithUserInfo {
                     id: row.id,
-                    user_id: row.user_id,
                     text: row.text,
-                    created_at: row.created_at.to_string()
+                    created_at: row.created_at.format("%Y-%m-%d %H:%M:%S").to_string(),
+                    user_id: row.user_id,
+                    username: row.username,
                 })
                 .collect();
 
@@ -59,7 +68,8 @@ impl NotificationStore for PostgresNotificationStore {
 #[derive(sqlx::FromRow)]
 struct NotificationRow {
     id: Uuid,
-    user_id: Uuid,
     text: String,
     created_at: NaiveDateTime,
+    user_id: Uuid,
+    username: String,
 }

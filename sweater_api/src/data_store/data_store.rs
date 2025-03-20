@@ -1,10 +1,10 @@
 use uuid::Uuid;
-use crate::domain::{Notification, User, UserAuthentication};
+use crate::domain::{Notification, NotificationWithUserInfo, User, UserAuthentication};
 
 #[async_trait::async_trait]
 pub trait NotificationStore: Send + Sync {
     async fn create_notification(&mut self, notification: &Notification) -> Result<(), String>;
-    async fn get_all_notifications(&self) -> Result<Vec<Notification>, String>;
+    async fn get_all_notifications(&self) -> Result<Vec<NotificationWithUserInfo>, String>;
 }
 
 #[async_trait::async_trait]

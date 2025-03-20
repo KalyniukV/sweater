@@ -20,3 +20,13 @@ impl Notification {
         }
     }
 }
+
+
+#[derive(Debug, Serialize, Clone)]
+pub struct NotificationWithUserInfo {
+    pub id: Uuid,
+    pub user_id: Uuid,
+    pub username: String,
+    pub text: String,
+    pub created_at: String,
+}

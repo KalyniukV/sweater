@@ -5,7 +5,6 @@ use gloo_net::http::{Method, RequestBuilder};
 use serde::{Deserialize, Serialize};
 use wasm_bindgen_futures::spawn_local;
 use web_sys::{HtmlDivElement, HtmlInputElement};
-use yew::html::IntoEventCallback;
 use yew::prelude::*;
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -70,7 +69,6 @@ pub fn create_notification(props: &Props) -> Html {
     };
 
     let on_submit = {
-        let content_clone = content.clone();
         let editor_ref_clone = editor_ref.clone();
         let user_id = user_id.clone();
 

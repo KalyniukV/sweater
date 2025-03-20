@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use wasm_bindgen::closure::Closure;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_futures::spawn_local;
-use web_sys::{Document, HtmlElement, HtmlImageElement, NodeList};
+use web_sys::{Document, HtmlElement, HtmlImageElement};
 use yew::prelude::*;
 use yew::use_state;
 use yew::virtual_dom::VNode;
@@ -12,9 +12,10 @@ use yew::virtual_dom::VNode;
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct Notification {
     pub id: String,
-    pub user_id: String,
     pub text: String,
     pub created_at: String,
+    pub user_id: String,
+    pub username: String
 }
 
 #[function_component(GetNotifications)]
@@ -62,16 +63,17 @@ pub fn get_notifications() -> Html {
             <button onclick={fetch_notifications}
                 style="background-color: #007bff; color: white; padding: 10px 16px; border: none; border-radius: 6px;
                        font-size: 16px; cursor: pointer; transition: background 0.3s; box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.2);">
-                {"Fetch Notifications"}
+                {"Load Notifications"}
             </button>
 
-            <div style="display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 20px; font-family: Arial, sans-serif; background-color: #f9f9f9;">
+            <div style="display: flex; flex-direction: column; align-items: center; width: 100%; gap: 16px; padding: 20px; font-family: Arial, sans-serif; background-color: #f9f9f9;">
                 <ul style="list-style: none; padding: 0; width: 100%;">
                     { for notifications_state.iter().map(|notification| {
-                        let wrapped_html = wrap_html_element(get_div(&notification.text), on_image_click.clone());
+                        let wrapped_html = wrap_html_element(create_div(&notification.text), on_image_click.clone());
                         html! {
-                            <li style="background: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);">
-                                { wrapped_html }
+                            <li>
+                                <div style="background-color: #ebebeb; padding: 1px; border-radius: 8px; box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);"> <h5 style="margin: 1px;"> { &notification.username } {" "} { &notification.created_at } </h5> </div>
+                                <div style="background: white; padding: 12px; border-radius: 8px; margin-bottom: 10px; box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);"> { wrapped_html } </div>
                             </li>
                         }
                     })}
@@ -111,11 +113,9 @@ fn wrap_html_element(element: HtmlElement, on_image_click: Callback<String>) -> 
     VNode::VRef(element.into())
 }
 
-fn get_div(text: &str) -> HtmlElement {
+fn create_div(text: &str) -> HtmlElement {
     let document: Document = web_sys::window().unwrap().document().unwrap();
     let div: HtmlElement = document.create_element("div").unwrap().dyn_into().unwrap();
-
     div.set_inner_html(text);
-
     div
 }

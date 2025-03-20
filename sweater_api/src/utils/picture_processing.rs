@@ -7,7 +7,7 @@ use base64::engine::general_purpose;
 use regex::Regex;
 use crate::utils::DATA_STORAGE_PATH;
 
-pub fn getImages(text: &str) -> Option<Vec<String>> {
+pub fn get_images(text: &str) -> Option<Vec<String>> {
     let re = Regex::new("base64,(.+?)\"").unwrap();
 
     let base64_vec = re.captures_iter(text)

@@ -34,7 +34,7 @@ impl NotificationStore for PostgresNotificationStore {
         Ok(())
     }
 
-    async fn get_all_notifications(&self) -> Result<Vec<NotificationWithUserInfo>, String> {
+    async fn get_notifications(&self, per_page: u32, offset: u32) -> Result<Vec<NotificationWithUserInfo>, String> {
         let rows = sqlx::query_as!(
             NotificationRow,
             "SELECT
@@ -45,7 +45,10 @@ impl NotificationStore for PostgresNotificationStore {
                 u.username as username
             FROM notifications as n
             inner join public.users u on n.user_id = u.id
-            order by created_at desc"
+            order by created_at desc
+            LIMIT $1 OFFSET $2",
+            per_page as i64,
+            offset as i64
         )
             .fetch_all(&self.pool)
             .await

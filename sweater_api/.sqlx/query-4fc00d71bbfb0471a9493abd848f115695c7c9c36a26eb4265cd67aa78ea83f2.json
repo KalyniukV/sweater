@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT\n                n.id as id,\n                n.text as text,\n                n.created_at as created_at,\n                u.id as user_id,\n                u.username as username\n            FROM notifications as n\n            inner join public.users u on n.user_id = u.id\n            order by created_at desc",
+  "query": "SELECT\n                n.id as id,\n                n.text as text,\n                n.created_at as created_at,\n                u.id as user_id,\n                u.username as username\n            FROM notifications as n\n            inner join public.users u on n.user_id = u.id\n            order by created_at desc\n            LIMIT $1 OFFSET $2",
   "describe": {
     "columns": [
       {
@@ -30,7 +30,10 @@
       }
     ],
     "parameters": {
-      "Left": []
+      "Left": [
+        "Int8",
+        "Int8"
+      ]
     },
     "nullable": [
       false,
@@ -40,5 +43,5 @@
       false
     ]
   },
-  "hash": "450c87d8dade4045c86376ea009bbe6380c853c73af2dbf2d62de757c70191dc"
+  "hash": "4fc00d71bbfb0471a9493abd848f115695c7c9c36a26eb4265cd67aa78ea83f2"
 }

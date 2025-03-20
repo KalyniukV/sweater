@@ -4,7 +4,7 @@ use crate::domain::{Notification, NotificationWithUserInfo, User, UserAuthentica
 #[async_trait::async_trait]
 pub trait NotificationStore: Send + Sync {
     async fn create_notification(&mut self, notification: &Notification) -> Result<(), String>;
-    async fn get_all_notifications(&self) -> Result<Vec<NotificationWithUserInfo>, String>;
+    async fn get_notifications(&self, per_page: u32, offset: u32) -> Result<Vec<NotificationWithUserInfo>, String>;
 }
 
 #[async_trait::async_trait]

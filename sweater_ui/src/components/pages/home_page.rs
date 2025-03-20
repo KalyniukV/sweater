@@ -3,7 +3,7 @@ use crate::routes::Route;
 use yew::prelude::*;
 use yew_router::prelude::*;
 use crate::components::pages::create_notification::CreateNotification;
-use crate::components::pages::get_all_notifications::GetNotifications;
+use crate::components::pages::get_notifications::GetNotifications;
 
 #[function_component(HomePage)]
 pub fn home_page() -> Html {
